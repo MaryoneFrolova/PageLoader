@@ -15,9 +15,8 @@ const getFilaName = (currentURL, outputPath) => {
 
 const saveData = (fileName, data) => {
   fs.writeFile(fileName, data)
-    .then(() => {
-      console.log(`Success. Page loading and saved in the file ${fileName}`);
-    });
+    .then(() => fileName);
+  //  console.log(`Success. Page loading and saved in the file ${fileName}`);
 };
 
 export default (url, outputPath = __dirname) => {
@@ -25,6 +24,6 @@ export default (url, outputPath = __dirname) => {
     .then(res => res.data)
     .then((res) => {
       const fileName = getFilaName(url, outputPath);
-      saveData(fileName, res);
+      return saveData(fileName, res);
     });
 };

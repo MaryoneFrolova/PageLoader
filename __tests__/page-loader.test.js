@@ -30,11 +30,10 @@ describe('page-loader test', () => {
   });
 
   it('testing...', async () => {
-    const pathToFile = path.join(pathToTemp, expectFileName);
     await loadPage(testURL, pathToTemp);
 
-    loadedData = await fs.readFile(pathToFile, 'utf-8');
+    loadedData = await fs.readFile(path.join(pathToTemp, expectFileName), 'utf-8');
 
-    expect(loadedData).toEqual(openedExceptContant);
+    expect(openedExceptContant).toEqual(loadedData);
   });
 });
