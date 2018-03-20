@@ -2,7 +2,7 @@
 
 import program from 'commander';
 import { version, description } from '../../package.json';
-import loadPages from '..';
+import loadPage from '..';
 
 program
   .version(version)
@@ -10,5 +10,5 @@ program
   .option('-o, --output [path]', 'Path to save')
   .arguments('<url>')
   .action(url =>
-    console.log(loadPages(url, program.output)))
+    loadPage(url, program.output))
   .parse(process.argv);
