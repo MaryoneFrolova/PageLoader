@@ -15,29 +15,25 @@ const expectFileName = 'hexlet-io-courses.html';
 const pathToExpectContantFile = '__tests__/__fixtures__/expect.html';
 
 describe('page-loader test', () => {
+  let exceptContant;
+  let receivedContant;
   let pathToTemp;
-  let openedExceptContant;
-  let loadedData;
+  let pathToFile;
 
   beforeAll(async () => {
-    try {
     pathToTemp = await fs.mkdtemp(`${os.tmpdir()}${path.sep}`);
-    } catch (e) {
-      console.log(e);
-    }
-    console.log(pathToTemp);
-    openedExceptContant = await fs.readFile(pathToExpectContantFile, 'utf8');
+    pathToFile = path.join(pathToTemp, expectFileName);
 
+    exceptContant = await fs.readFile(pathToExpectContantFile, 'utf8');
     nock(testURL)
       .get('')
       .replyWithFile(200, pathToExpectContantFile);
   });
 
-  it('testing...', async () => {
+  it('Step 1 testing...', async () => {
     await loadPage(testURL, pathToTemp);
+    receivedContant = await fs.readFile(pathToFile, 'utf8');
 
-    loadedData = await fs.readFile(path.join(pathToTemp, expectFileName), 'utf-8');
-
-    expect(openedExceptContant).toEqual(loadedData);
+    expect(receivedContant).toEqual(exceptContant);
   });
 });

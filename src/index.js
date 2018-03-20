@@ -13,17 +13,9 @@ const getFilaName = (currentURL, outputPath) => {
   return `${currentPath}${formatHTML}`;
 };
 
-const saveData = (fileName, data) => {
-  fs.writeFile(fileName, data)
-    .then(() => fileName);
-  //  console.log(`Success. Page loading and saved in the file ${fileName}`);
-};
-
 export default (url, outputPath = __dirname) => {
-  axios.get(url)
-    .then(res => res.data)
-    .then((res) => {
-      const fileName = getFilaName(url, outputPath);
-      return saveData(fileName, res);
-    });
+  const fileName = getFilaName(url, outputPath);
+
+  return axios.get(url)
+    .then(res => fs.writeFile(fileName, res.data));
 };
