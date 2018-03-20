@@ -3,15 +3,13 @@ import path from 'path';
 import nock from 'nock';
 import fs from 'mz/fs';
 import axios from 'axios';
+import os from 'os';
 import httpAdapter from 'axios/lib/adapters/http';
 import loadPage from '../src';
-import os from 'os';
-import fsSync from 'fs';
 
 axios.defaults.adapter = httpAdapter;
 
 const testURL = 'https://hexlet.io/courses';
-const testOutputPath = path.resolve(__dirname, 'temp');
 
 const expectFileName = 'hexlet-io-courses.html';
 const pathToExpectContantFile = '__tests__/__fixtures__/expect.html';
@@ -23,8 +21,7 @@ describe('page-loader test', () => {
   let loadedData;
 
   beforeAll(async () => {
-    
-    pathToTemp = await fs.mkdtemp(path.join(osTempDir));
+    pathToTemp = await fs.mkdtemp(osTempDir);
     openedExceptContant = await fs.readFile(pathToExpectContantFile, 'utf8');
 
     nock(testURL)
@@ -33,19 +30,11 @@ describe('page-loader test', () => {
   });
 
   it('testing...', async () => {
-
-    
-    //await loadPage(testURL, pathToTemp);
-    //console.log(path.join(pathToTemp, expectFileName));
-    const filepath = path.join(pathToTemp, expectFileName);
+    const pathToFile = path.join(pathToTemp, expectFileName);
     await loadPage(testURL, pathToTemp);
-   
-    console.log(pathToTemp);
 
-    loadedData = await fs.readFile(filepath, 'utf-8');
-    console.log(pathToTemp);
-    console.log(testURL);
-    console.log(loadedData);
+    loadedData = await fs.readFile(pathToFile, 'utf-8');
+
     expect(loadedData).toEqual(openedExceptContant);
   });
 });

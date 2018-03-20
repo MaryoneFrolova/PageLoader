@@ -1,5 +1,8 @@
 
 language: node_js
+env:
+  global:
+    - 6432cfd6b9d5562e40f3c50d210d939734ba4ebdfbbe7bf101ab6a1f3cd606de
 node_js:
   - stable
 
