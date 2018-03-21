@@ -17,5 +17,6 @@ export default (url, outputPath = __dirname) => {
   const fileName = getFilaName(url, outputPath);
 
   return axios.get(url)
-    .then(res => fs.writeFile(fileName, res.data));
+    .then(res => fs.writeFile(fileName, res.data))
+    .then(() => console.log(`Success. File was load and save on path ${fileName}`));
 };
