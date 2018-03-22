@@ -4,6 +4,12 @@ import urlModule from 'url';
 import fs from 'mz/fs';
 import cheerio from 'cheerio';
 
+const validTags = {
+  link: 'href',
+  script: 'src',
+  img: 'src',
+};
+
 const getFullFilePath = (currentURL, outputPath, extention = '.html') => {
   const { host, port, path } = urlModule.parse(currentURL);
   const stringFormatURL = [host, port, path]
@@ -43,25 +49,15 @@ const getLocalResourses = (html, url, pathToSrcDir) => {
   const $ = cheerio.load(html);
 
   const linksRes = [];
-  $('script').each((i, el) => {
-    const res = getOldAndNewLink($(el).attr('src'), url, pathToSrcDir);
+  const validTag = Object.keys(validTags).join(',');
+
+  $(validTag).each((i, el) => {
+    const curTagName = $(el)[0].tagName;
+    const curAttrName = validTags[curTagName];
+    const res = getOldAndNewLink($(el).attr(curAttrName), url, pathToSrcDir);
     if (res) {
       linksRes.push(res.link);
-      $(el).attr('src', res.newLink);
-    }
-  });
-  $('img').each((i, el) => {
-    const res = getOldAndNewLink($(el).attr('src'), url, pathToSrcDir);
-    if (res) {
-      linksRes.push(res.link);
-      $(el).attr('src', res.newLink);
-    }
-  });
-  $('link').each((i, el) => {
-    const res = getOldAndNewLink($(el).attr('src'), url, pathToSrcDir);
-    if (res) {
-      linksRes.push(res.link);
-      $(el).attr('src', res.newLink);
+      $(el).attr(curAttrName, res.newLink);
     }
   });
   const resHTML = $.html();
