@@ -30,10 +30,11 @@
     "testEnvironment": "node",
     "modulePathIgnorePatterns": [
       "/node-modules/",
-      "/__tests__/__fixtures__/"],
+      "<rootDir>/__tests__/__fixtures__/"],
     "coverageReporters": [
       "lcov"],
-    "collectCoverage": true
+    "collectCoverage": true,
+    "verbose": true
   },
   "homepage": "https://github.com/MaryoneFrolova/project-lvl2-s193#readme",
   "dependencies": {

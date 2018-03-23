@@ -79,19 +79,3 @@ describe('page-loader test', () => {
     expect(exceptContant).toEqual(receivedContant);
   });
 });
-
-describe('page-loader errors test', () => {
-  it('Error 404 testing', async () => {
-    const pathToTempDir = await fs.mkdtemp(`${os.tmpdir()}${path.sep}`);
-
-    nock('http://www.bus27.ru/')
-      .get('/assets')
-      .reply(404);
-
-    try {
-      await loadPage('http://www.bus27.ru/assets', pathToTempDir);
-    } catch (err) {
-      expect('Request failed with status code 404').toEqual(err.message);
-    }
-  });
-});
