@@ -115,10 +115,7 @@ export default (url, outputPath = __dirname) => {
       return loadResourses(linksRes, pathResDir, url, resHTML);
     })
     .then(res => fs.writeFile(pathHTMLfile, res))
-    .then((res) => {
-      ok(`HTML document saved successfully ${pathHTMLfile}`);
-      return res;
-    })
+    .then(() => ok(`HTML document saved successfully ${pathHTMLfile}`))
     .catch((err) => {
       error(`${err.message}`);
       return err;

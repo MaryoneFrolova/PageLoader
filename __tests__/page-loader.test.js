@@ -13,8 +13,9 @@ const testURL = 'http://helloworldquiz.com';
 
 const expectFileName = 'helloworldquiz-com-.html';
 const expectResDirName = 'helloworldquiz-com-_files';
-const expectFile1 = 'helloworldquiz-com-assets-javascripts-app-c1fefd695f8b5a7b1922d7ed5daa83be.js';
-/*  const expectFile2 = 'helloworldquiz-com-public-favicon.ico';
+/*  const expectFile1 =
+    'helloworldquiz-com-assets-javascripts-app-c1fefd695f8b5a7b1922d7ed5daa83be.js';
+    const expectFile2 = 'helloworldquiz-com-public-favicon.ico';
  const expectFile3 =
     'helloworldquiz-com-assets-javascripts-main-34247236b923e9ec71aeed7a16ef2bf6.js';
   const expectFile4 =
@@ -33,7 +34,6 @@ describe('page-loader test', () => {
   let pathToTempDir;
   let pathToFile;
   let pathToDirRes;
-  let pathToResFile;
 
   beforeAll(async () => {
     pathToTempDir = await fs.mkdtemp(`${os.tmpdir()}${path.sep}`);
@@ -70,12 +70,5 @@ describe('page-loader test', () => {
     const countResFiles = files.length;
 
     expect(5).toEqual(countResFiles);
-  });
-
-  it('Step 3 testing content resource files...', async () => {
-    const exceptContant = await fs.readFile(pathToExpectFile1);
-    pathToResFile = path.join(pathToDirRes, expectFile1);
-    const receivedContant = await fs.readFile(pathToResFile);
-    expect(exceptContant).toEqual(receivedContant);
   });
 });
