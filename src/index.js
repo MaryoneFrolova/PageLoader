@@ -3,6 +3,11 @@ import pathModule from 'path';
 import urlModule from 'url';
 import fs from 'mz/fs';
 import cheerio from 'cheerio';
+import debug from 'debug';
+
+const ok = debug('page-loader:ok');
+const warning = debug('page-loader: warning');
+const error = debug('page-loader: ERROR');
 
 const validTags = {
   link: 'href',
@@ -10,96 +15,109 @@ const validTags = {
   img: 'src',
 };
 
-const getFullFilePath = (currentURL, outputPath, extention = '.html') => {
-  const { host, port, path } = urlModule.parse(currentURL);
+const createFileName = (url, extName) => {
+  const { host, port, path } = urlModule.parse(url);
   const stringFormatURL = [host, port, path]
     .join('')
     .replace(/[^a-z0-9]/gi, '-');
-  const currentPath = pathModule.resolve(outputPath, stringFormatURL);
-  return `${currentPath}${extention}`;
+  return `${stringFormatURL}${extName}`;
 };
 
-
-const getFileName = (link, basename) => {
-  const { pathname } = urlModule.parse(link);
-  return `${basename}/${pathModule.basename(getFullFilePath(link, basename, pathModule.extname(pathname)))}`;
+const createFileNameFromURL = (url) => {
+  const linkExtName = pathModule.extname(urlModule.parse(url).pathname);
+  const linkWithoutExtName = url.replace(/\.[^/.]+$/, '');
+  return createFileName(linkWithoutExtName, linkExtName);
 };
 
-const getOldAndNewLink = (attrVal, url, pathToSrcDir) => {
+const getLocalResourses = (html, url, dirResName) => {
   const { host } = urlModule.parse(url);
-  const basename = `./${pathModule.basename(pathToSrcDir)}`;
-  const regExp = new RegExp(`^http.://${host}`, 'i');
 
-  let link;
-  let newLink;
-  if (attrVal && attrVal.match(/^(\/[a-z])/i)) {
-    link = urlModule.resolve(url, attrVal);
-    newLink = getFileName(link, basename);
-    return { link, newLink };
-  }
-  if (attrVal && attrVal.match(regExp)) {
-    link = attrVal;
-    newLink = getFileName(attrVal, basename);
-    return { link, newLink };
-  }
-  return null;
-};
+  const rexpAbsoluteLink = new RegExp(`^http://${host}`, 'i');
+  const rexpRelativeLink = new RegExp('^/[a-z]', 'i');
 
-const getLocalResourses = (html, url, pathToSrcDir) => {
   const $ = cheerio.load(html);
 
   const linksRes = [];
   const validTag = Object.keys(validTags).join(',');
 
   $(validTag).each((i, el) => {
-    const curTagName = $(el)[0].tagName;
-    const curAttrName = validTags[curTagName];
-    const res = getOldAndNewLink($(el).attr(curAttrName), url, pathToSrcDir);
-    if (res) {
-      linksRes.push(res.link);
-      $(el).attr(curAttrName, res.newLink);
+    const curentTag = $(el)[0].tagName;
+    const attrTag = validTags[curentTag];
+    const attrVal = $(el).attr(attrTag);
+    if (attrVal) {
+      if (attrVal.match(rexpRelativeLink) || attrVal.match(rexpAbsoluteLink)) {
+        const link = (attrVal.match(rexpRelativeLink) ? urlModule.resolve(url, attrVal) : attrVal);
+        const fileNameRes = createFileNameFromURL(link);
+        const newLink = `./${dirResName}/${fileNameRes}`;
+        linksRes.push(link);
+        $(el).attr(attrTag, newLink);
+      }
     }
   });
   const resHTML = $.html();
   return { linksRes, resHTML };
 };
 
-const loadResourses = (links, pathToSrcDir, url, html) => {
+const loadResourses = (links, pathResDir, url, html) => {
+  const promises = [];
   links.forEach((srcLink) => {
-    const { pathname } = urlModule.parse(srcLink);
-    const saveLoc = getFullFilePath(srcLink, pathToSrcDir, pathModule.extname(pathname));
+    const fileNameRes = createFileNameFromURL(srcLink);
+    const pathResFile = pathModule.resolve(pathResDir, fileNameRes);
 
-    return axios.get(srcLink, { responseType: 'arraybuffer' })
-      .then(res => res.data)
+    const promise = axios.get(srcLink, { responseType: 'stream' })
       .then((res) => {
-        fs.writeFile(saveLoc, res);
+        ok(`${srcLink} loading`);
+        res.data.pipe(fs.createWriteStream(pathResFile));
       })
-      .catch(() => Promise.resolve());
+      .then(() => ok(`${pathResFile} saved`))
+      .catch((err) => {
+        warning(`File  not loaded and skip ${srcLink}. ${err.message}`);
+        return Promise.resolve();
+      });
+    promises.push(promise);
   });
-
-  return html;
+  return axios.all(promises)
+    .then(() => {
+      ok('All resource files was loading');
+      return html;
+    });
 };
 
+const makeResDir = (path, html) =>
+  fs.mkdir(path)
+    .then(() => {
+      ok(`Directory for resources available: ${path}`);
+      return html;
+    })
+    .catch((err) => {
+      if (err.code === 'EEXIST') {
+        warning('Directory alreade exist. Program use this directory');
+        return html;
+      }
+      return err;
+    });
+
 export default (url, outputPath = __dirname) => {
-  const fileName = getFullFilePath(url, outputPath, '.html');
-  const dirResName = getFullFilePath(url, outputPath, '_files');
+  const dirResName = createFileName(url, '_files');
+  const pathResDir = pathModule.resolve(outputPath, dirResName);
+  const fileNameHTML = createFileName(url, '.html');
+  const pathHTMLfile = pathModule.resolve(outputPath, fileNameHTML);
 
   return axios.get(url)
     .then((res) => {
-      console.log('Connection success');
+      ok(`Connection with url ${url} established. Status: ${res.status}`);
       return res.data;
     })
-    .then((res) => {
-      fs.mkdir(dirResName);
-      console.log(`Add new dir for Resourcer: ${dirResName}`);
-      return res;
-    })
+    .then(res => makeResDir(pathResDir, res))
     .then((res) => {
       const { linksRes, resHTML } = getLocalResourses(res, url, dirResName);
-      console.log(`Links: ${linksRes}`);
-      const html = loadResourses(linksRes, dirResName, url, resHTML);
-      return html;
+      warning(linksRes);
+      return loadResourses(linksRes, pathResDir, url, resHTML);
     })
-    .then(res => fs.writeFile(fileName, res))
-    .catch(error => Promise.reject(error));
+    .then(res => fs.writeFile(pathHTMLfile, res))
+    .then(() => ok(`HTML document saved successfully ${pathHTMLfile}`))
+    .catch((err) => {
+      error(`${err.message}`);
+      return Promise.reject(err);
+    });
 };

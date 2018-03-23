@@ -1,6 +1,6 @@
 {
   "name": "page_loader_maryone",
-  "version": "0.0.7",
+  "version": "0.0.9",
   "description": "Load pages from input url and save to directory of output path (default in current directory)",
   "main": "dist/index.js",
   "bin": {
@@ -27,7 +27,10 @@
     "url": "https://github.com/MaryoneFrolova/project-lvl2-s193/issues"
   },
   "jest": {
-    "testEnvironment": "node"
+    "testEnvironment": "node",
+    "modulePathIgnorePatterns": [
+      "/node-modules/",
+      "/__tests__/__fixtures__/"]
   },
   "homepage": "https://github.com/MaryoneFrolova/project-lvl2-s193#readme",
   "dependencies": {
@@ -38,7 +41,8 @@
     "js-yaml": "^3.10.0",
     "lodash": "^4.17.5",
     "mz": "^2.7.0",
-    "nock": "^9.2.3"
+    "nock": "^9.2.3",
+    "debug": "^3.1.0"
   },
   "devDependencies": {
     "babel-cli": "*",
@@ -49,7 +53,6 @@
     "babel-preset-env": "*",
     "babel-preset-flow": "*",
     "babel-preset-stage-0": "*",
-    "debug": "*",
     "eslint": "^4.17.0",
     "eslint-config-airbnb-base": "*",
     "eslint-plugin-flowtype": "^2.44.0",

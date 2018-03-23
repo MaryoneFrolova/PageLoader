@@ -1,0 +1,193 @@
+<!DOCTYPE html><html><head>
+    <title>Hello World Quiz</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <link rel="shortcut icon" href="http://helloworldquiz.com/public/favicon.ico">
+    <link rel="icon" sizes="16x16 32x32" href="http://helloworldquiz.com/public/favicon.ico">
+    <meta property="og:title" content="Guess programming language by &#x201C;Hello, world!&#x201D; snippet">
+    <meta property="og:description" content="Guess programming language by &#x201C;Hello, world!&#x201D; snippet">
+    <meta property="og:url" content="http://helloworldquiz.com">
+    <meta property="og:image" content="http://helloworldquiz.com/public/icon.png">
+    <meta name="signet:authors" content="Dmitry Krasnoukhov, Slava Zagorodniy">
+    <meta name="signet:links" content="https://github.com/krasnoukhov/helloworldquiz, https://twitter.com/krasnoukhov, https://twitter.com/kr3ved">
+    
+    <script type="text/javascript">
+      var Config = {
+        title: "Hello World Quiz",
+        caption: "Guess programming language by “Hello, world!” snippet",
+        description: "Guess programming language by “Hello, world!” snippet",
+        host: "helloworldquiz.com",
+        reload: function() {
+          (function(d, s, id) {
+            var js, fjs = d.getElementsByTagName(s)[0];
+            js = d.createElement(s); 
+            js.src = "//platform.twitter.com/widgets.js";
+            fjs.parentNode.insertBefore(js, fjs);
+          }(document, 'script', 'twitter-wjs'));
+          
+          $("#fb-root").remove();
+          (function(d, s, id) {
+            var js, fjs = d.getElementsByTagName(s)[0];
+            js = d.createElement(s); 
+            js.src = "//connect.facebook.net/en_US/all.js#xfbml=1&appId=163504373852504";
+            js.onload = function() {
+              FB.XFBML.parse();
+            } 
+            fjs.parentNode.insertBefore(js, fjs);
+          }(document, 'script', 'facebook-jssdk'));
+        }
+      }
+    </script>
+    
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+      
+      ga('create', 'UA-43847693-1', 'helloworldquiz.com');
+    </script>
+    
+    <link type="text/css" rel="stylesheet" href="/assets/stylesheets/app-64f049c2230c2b71a4ae3a06d5d95cc3.css">
+    <link type="text/css" rel="stylesheet" href="/assets/stylesheets/main-157d81688d2f7019fa56a07c70898d52.css">
+    <script src="/assets/javascripts/app-c1fefd695f8b5a7b1922d7ed5daa83be.js"></script>
+    <script src="/assets/javascripts/main-34247236b923e9ec71aeed7a16ef2bf6.js"></script>
+    <link href="http://fonts.googleapis.com/css?family=Gafata" rel="stylesheet" type="text/css">
+  </head>
+  <body>
+    <script type="text/x-handlebars">
+  {{outlet}}
+</script>
+
+<script type="text/x-handlebars" data-template-name="index">
+  <div class="hero-unit">
+    <div class="inner">
+      <h1>{{title}}</h1>
+      <p>{{description}}</p>
+      <button class="pure-button pure-button-secondary pure-button-large" {{action "play"}} {{bind-attr disabled="isLoading"}}>Play</button>
+    </div>
+  </div>
+</script>
+
+<script type="text/x-handlebars" data-template-name="game">
+  <div class="container">
+    {{partial "header"}}
+    
+    {{#if response.variant}}
+      <div class="status">
+        <span>Lives: {{game.lives}}</span>
+        <span>Score: {{game.score}}</span>
+      </div>
+      
+      <pre>
+        <code>{{{highlightedSnippet}}}</code>
+      </pre>
+      
+      <div class="answers">
+      {{#if correct}}
+        <ul class="result">
+          <li>
+            <h2>Nope! The right answer was {{correct.name}}</h2>
+            <a class="pure-button pure-button-error" {{action "next"}}>
+              {{#if isLive}}
+              Next
+              {{else}}
+              Game over
+              {{/if}}
+            </a>
+          </li>
+        </ul>
+      {{else}}
+        <ul class="answer-types">
+          {{#each option in response.variant.options}}
+            <li>
+              <button class="pure-button pure-button-secondary" {{action "choose" option.key}} {{bind-attr disabled="isLoading"}}>
+                {{option.name}}
+              </button>
+            </li>
+          {{/each}}
+        </ul>
+      {{/if}}
+      </div>
+    {{else}}
+      <div class="gameover">
+        <h3>Your score is {{game.score}}!</h3>
+        <a href="/#/" class="pure-button pure-button-secondary">Play again</a>
+        <del class="clearfix"></del>
+        
+        {{#if hasSurvived}}
+        <a href="http://theoldreader.com/kittens/" target="_blank">
+          <img src="http://theoldreader.com/kittens/500/350/" alt="Kittens!" />
+        </a>
+        <del class="clearfix"></del>
+        <i>(Refresh to see more dope kittens)</i>
+        {{/if}}
+      </div>
+    {{/if}}
+  </div>
+  
+  {{partial "footer"}}
+</script>
+
+<script type="text/x-handlebars" data-template-name="stats">
+  <div class="container">
+    {{partial "header"}}
+    
+    {{#with model}}
+    <h2>Stats</h2>
+    <table>
+      <tr>
+        <td>Games</td>
+        <td>{{games}}</td>
+      </tr>
+      <tr>
+        <td>Languages count</td>
+        <td>{{variants}}</td>
+      </tr>
+      <tr>
+        <td>Completion rate</td>
+        <td>{{completion_rate}}%</td>
+      </tr>
+      <tr>
+        <td>Easiest language</td>
+        {{#with easiest}}
+          <td>{{name}} ({{value}}% of right guesses)</td>
+        {{/with}}
+      </tr>
+      <tr>
+        <td>Hardest language</td>
+        {{#with hardest}}
+          <td>{{name}} ({{value}}% of wrong guesses)</td>
+        {{/with}}
+      </tr>
+      <tr>
+        <td>Highest score</td>
+        <td>{{highest}}</td>
+      </tr>
+    </table>
+    {{/with}}
+  </div>
+
+  {{partial "footer"}}
+</script>
+
+<script type="text/x-handlebars" data-template-name="_header">
+  <h1 class="clearfix"><a href="/#/game">{{title}}</a> <a href="/#/stats" class="pure-button">Stats</a></h1>
+</script>
+
+<script type="text/x-handlebars" data-template-name="_footer">
+  <footer class="container clearfix">
+    <p class="pull-left">
+      <a href="http://krasnoukhov.com/" target="_blank">Dmitry Krasnoukhov</a> & <a href="https://github.com/kr3ved" target="_blank">Slava Zagorodniy</a>
+      <br />
+      Highly inspired by <a href="http://greatlanguagegame.com/" target="_blank">Great Language Game</a>
+    </p>
+    
+    <div class="pull-right fb-like" {{bind-attr data-href="url"}} data-width="107" data-layout="button_count" data-show-faces="false" data-send="false"></div>
+    <a class="pull-right twitter-share-button" href="https://twitter.com/share" {{bind-attr data-url="url"}} {{bind-attr data-text="caption"}}>Tweet</a>
+    <iframe class="pull-right" src="http://ghbtns.com/github-btn.html?user=krasnoukhov&repo=helloworldquiz&type=watch&count=true" allowtransparency="true" frameborder="0" scrolling="no" style="border:none; overflow:hidden; width:107px; height:20px;"></iframe>
+  </footer>
+</script>
+
+  
+
+</body></html>

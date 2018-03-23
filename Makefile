@@ -1,7 +1,10 @@
 install: install-deps install-flow-typed
 
 run:
-	npm run babel-node -- 'src/bin/page-loader.js'
+	npm run babel-node -- 'src/bin/page-loader.js' http://cafefrida.ca
+
+run-debug:
+	DEBUG=page-loader:* npm run babel-node -- 'src/bin/page-loader.js'  http://helloworldquiz.com
 
 install-deps:
 	npm install
@@ -30,5 +33,8 @@ lint:
 
 publish:
 	npm publish
+
+debug:
+	DEBUG=page-loader:* npm test
 
 .PHONY: test
