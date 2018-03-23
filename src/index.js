@@ -111,7 +111,7 @@ export default (url, outputPath = __dirname) => {
     .then(res => makeResDir(pathResDir, res))
     .then((res) => {
       const { linksRes, resHTML } = getLocalResourses(res, url, dirResName);
-      warning(linksRes);
+      ok(`Founded links: ${linksRes}`);
       return loadResourses(linksRes, pathResDir, url, resHTML);
     })
     .then(res => fs.writeFile(pathHTMLfile, res))
