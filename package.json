@@ -33,7 +33,6 @@
       "/__tests__/__fixtures__/"],
     "coverageReporters": [
       "lcov"],
-    "verbose": true,
     "collectCoverage": true
   },
   "homepage": "https://github.com/MaryoneFrolova/project-lvl2-s193#readme",

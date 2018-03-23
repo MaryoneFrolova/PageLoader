@@ -75,7 +75,7 @@ describe('page-loader test', () => {
   it('Step 3 testing content resource files...', async () => {
     const exceptContant = await fs.readFile(pathToExpectFile1);
     pathToResFile = path.join(pathToDirRes, expectFile1);
-    const receivedContant = await fs.readFileSync(pathToResFile);
+    const receivedContant = await fs.readFile(pathToResFile);
     expect(exceptContant).toEqual(receivedContant);
   });
 });
@@ -84,12 +84,12 @@ describe('page-loader errors test', () => {
   it('Error 404 testing', async () => {
     const pathToTempDir = await fs.mkdtemp(`${os.tmpdir()}${path.sep}`);
 
-    nock('https://somepage.ru')
-      .get('/')
+    nock('http://www.bus27.ru/')
+      .get('/assets')
       .reply(404);
 
     try {
-      await loadPage('https://somepage.ru', pathToTempDir);
+      await loadPage('http://www.bus27.ru/assets', pathToTempDir);
     } catch (err) {
       expect('Request failed with status code 404').toEqual(err.message);
     }

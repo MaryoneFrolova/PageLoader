@@ -6,6 +6,9 @@ run:
 run-debug:
 	DEBUG=page-loader:* npm run babel-node -- 'src/bin/page-loader.js'  http://helloworldquiz.com
 
+err-debug:
+	DEBUG=page-loader:* npm run babel-node -- 'src/bin/page-loader.js'  http://www.bus27.ru/assets
+
 install-deps:
 	npm install
 
