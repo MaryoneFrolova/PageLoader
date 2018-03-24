@@ -5,9 +5,7 @@ import fs from 'mz/fs';
 import cheerio from 'cheerio';
 import debug from 'debug';
 
-const ok = debug('page-loader:ok');
-const warning = debug('page-loader: warning');
-const error = debug('page-loader: ERROR');
+const log = debug('page-loader:log');
 
 const validTags = {
   link: 'href',
@@ -58,43 +56,37 @@ const getLocalResourses = (html, url, dirResName) => {
   return { linksRes, resHTML };
 };
 
-const loadResourses = (links, pathResDir, url, html) => {
-  const promises = [];
-  links.forEach((srcLink) => {
+const loadResourses = (links, pathResDir) =>
+  axios.all(links.map((srcLink) => {
     const fileNameRes = createFileNameFromURL(srcLink);
     const pathResFile = pathModule.resolve(pathResDir, fileNameRes);
 
-    const promise = axios.get(srcLink, { responseType: 'stream' })
+    return axios.get(srcLink, { responseType: 'stream' })
       .then((res) => {
-        ok(`${srcLink} loading`);
+        log(`${srcLink} loading`);
         res.data.pipe(fs.createWriteStream(pathResFile));
       })
-      .then(() => ok(`${pathResFile} saved`))
+      .then(() => log(`${pathResFile} saved`))
       .catch((err) => {
-        warning(`File  not loaded and skip ${srcLink}. ${err.message}`);
+        log(`Warning: File  not loaded and skip ${srcLink}. ${err.message}`);
         return Promise.resolve();
       });
-    promises.push(promise);
-  });
-  return axios.all(promises)
+  }))
     .then(() => {
-      ok('All resource files was loading');
-      return html;
+      log('All resource files was loading');
     });
-};
 
-const makeResDir = (path, html) =>
+const makeResDir = path =>
   fs.mkdir(path)
-    .then(() => {
-      ok(`Directory for resources available: ${path}`);
-      return html;
-    })
-    .catch((err) => {
+    .then((res) => {
+      log(`Directory for resources available: ${path}`);
+      return res;
+    }, (err) => {
       if (err.code === 'EEXIST') {
-        warning('Directory alreade exist. Program use this directory');
-        return html;
+        log(`Warning: Directory alreade exist. Program will use this directory ${path}`);
+        return Promise.resolve();
       }
-      return err;
+      return Promise.reject(err);
     });
 
 export default (url, outputPath = __dirname) => {
@@ -102,22 +94,28 @@ export default (url, outputPath = __dirname) => {
   const pathResDir = pathModule.resolve(outputPath, dirResName);
   const fileNameHTML = createFileName(url, '.html');
   const pathHTMLfile = pathModule.resolve(outputPath, fileNameHTML);
+  let linksToResources;
 
-  return axios.get(url)
+  return makeResDir(pathResDir)
+    .then(() => axios.get(url))
     .then((res) => {
-      ok(`Connection with url ${url} established. Status: ${res.status}`);
+      log(`Connection with url ${url} established. Status: ${res.status}`);
       return res.data;
     })
-    .then(res => makeResDir(pathResDir, res))
     .then((res) => {
       const { linksRes, resHTML } = getLocalResourses(res, url, dirResName);
-      ok(`Founded links: ${linksRes}`);
-      return loadResourses(linksRes, pathResDir, url, resHTML);
+      linksToResources = linksRes;
+      return fs.writeFile(pathHTMLfile, resHTML);
     })
-    .then(res => fs.writeFile(pathHTMLfile, res))
-    .then(() => ok(`HTML document saved successfully ${pathHTMLfile}`))
+    .then(() => {
+      log(`HTML document saved successfully ${pathHTMLfile}`);
+      //  const linksRes = ['http://helloworldquiz.com/public/favicon.ico', 'http://hsdfa.com/public/favicoasdfn.ico'];
+      log(`Founded links: ${linksToResources}`);
+      return loadResourses(linksToResources, pathResDir);
+    })
+    .then(() => log('Success'))
     .catch((err) => {
-      error(`${err.message}`);
+      log(`${err.message}`);
       return err;
     });
 };
