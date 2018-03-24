@@ -108,11 +108,12 @@ describe('error-test', () => {
   it('Step 3 Error ENOTFOUND...', async () => {
     const pathToTempDir = await fs.mkdtemp(`${os.tmpdir()}${path.sep}`);
     nock('http://somepage.ru')
-      .get('/');
+      .get('/')
+      .reply(443);
     try {
       await loadPage('http://somepage.ru', pathToTempDir);
     } catch (err) {
-      expect(err.message).toEqual('getaddrinfo ENOTFOUND somepage.ru somepage.ru:80');
+      expect(err.message).toEqual('Request failed with status code 443');
     }
   });
 });
