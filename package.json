@@ -1,6 +1,6 @@
 {
   "name": "page_loader_maryone",
-  "version": "0.0.12",
+  "version": "0.0.14",
   "description": "Load pages from input url and save to directory of output path (default in current directory)",
   "main": "dist/index.js",
   "bin": {
