@@ -11,11 +11,13 @@ program
   .arguments('<url>')
   .action((url) => {
     loadPage(url, program.output)
-      .catch((err) => {
-        if (err.response) {
-          console.error(`Response from URL: ${err.response.config.url} ${err.response.status} ${err.response.statusText}`);
-        } else {
-          console.error(err.message);
+      .catch((error) => {
+        console.error(`Error: ${error.message}`);
+        if (error.path) {
+          console.error(error.path);
+        }
+        if (error.config) {
+          console.error(error.config.url);
         }
         process.exit(1);
       });
