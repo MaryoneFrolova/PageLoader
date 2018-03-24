@@ -116,6 +116,6 @@ export default (url, outputPath = __dirname) => {
     .then(() => log('Success'))
     .catch((err) => {
       log(`${err.message}`);
-      return err;
+      throw err;
     });
 };
