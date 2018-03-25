@@ -4,7 +4,7 @@ import urlModule from 'url';
 import fs from 'mz/fs';
 import cheerio from 'cheerio';
 import debug from 'debug';
-import listr from 'listr';
+import Listr from 'listr';
 
 const log = debug('page-loader:log');
 
@@ -61,21 +61,21 @@ const loadResourses = (links, pathResDir) =>
   axios.all(links.map((srcLink) => {
     const fileNameRes = createFileNameFromURL(srcLink);
     const pathResFile = pathModule.resolve(pathResDir, fileNameRes);
-    
-    const tasks = new listr([{
-    title: `loading resourse file ${srcLink}`,
-    task: () => {return axios.get(srcLink, { responseType: 'stream' })
-      .then((res) => {
-        log(`${srcLink} loading`);
-        res.data.pipe(fs.createWriteStream(pathResFile));
-      })
-      .then(() => log(`${pathResFile} saved`))
-      .catch((err) => {
-        log(`Warning: File  not loaded and skip ${srcLink}. ${err.message}`);
-        return Promise.resolve();
-      });
-    }
-    }])
+
+    const tasks = new Listr([{
+      title: `loading resourse file ${srcLink}`,
+      task: () =>
+        axios.get(srcLink, { responseType: 'stream' })
+          .then((res) => {
+            log(`${srcLink} loading`);
+            res.data.pipe(fs.createWriteStream(pathResFile));
+          })
+          .then(() => log(`${pathResFile} saved`))
+          .catch((err) => {
+            log(`Warning: File  not loaded and skip ${srcLink}. ${err.message}`);
+            return Promise.resolve();
+          }),
+    }]);
     return tasks.run();
   }))
     .then(() => {
@@ -92,7 +92,7 @@ const makeResDir = path =>
     .catch((err) => {
       if (err.code === 'EEXIST') {
         log(`Warning: Directory alreade exist. Program will use this directory ${path}`);
-        return;
+        return path;
       }
       return Promise.reject(err);
     });
