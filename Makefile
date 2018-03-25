@@ -1,7 +1,7 @@
 install: install-deps install-flow-typed
 
 run:
-	npm run babel-node -- 'src/bin/page-loader.js' http://somepage.ru
+	npm run babel-node -- 'src/bin/page-loader.js' http://helloworldquiz.com
 
 run-debug:
 	DEBUG=page-loader:* npm run babel-node -- 'src/bin/page-loader.js'  http://helloworldquiz.com
